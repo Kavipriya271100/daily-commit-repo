@@ -1,21 +1,32 @@
-name: Daily Commit
+name: Scrape IMDb Top 250
 
 on:
   schedule:
-    - cron: '15 11 * * *'  # This runs the workflow every day at 12:00 PM UTC
+    # Runs at 00:00 UTC every day
+    - cron: "0 0 * * *"
+  workflow_dispatch: # Allow manual triggers
 
 jobs:
-  commit:
+  scrape-imdb:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    permissions:
+      contents: write
 
-      - name: Create a Commit
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run scraper
+        run: | # python
+          uv run --with httpx,lxml,cssselect python scrape.py
+
+      - name: Commit and push changes
         run: |
-          echo "Daily commit from GitHub Action" >> daily_commit.txt
-          git config --local user.email "kavipriya.manivannan@straive.com"
-          git config --local user.name "GitHub Action"
-          git add daily_commit.txt
-          git commit -m "Daily commit from GitHub Action"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add *.json
+          git commit -m "Update IMDb Top 250 data [skip ci]" || exit 0
           git push
