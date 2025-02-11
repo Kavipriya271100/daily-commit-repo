@@ -1,19 +1,41 @@
-name: Daily Commit
+name: Daily Repository Update
 
 on:
   schedule:
-    - cron: '30 11 * * *' # Runs daily at 2:30 AM UTC.  Adjust as needed.
+    # Run at 05:26 UTC (10:56 AM IST)
+    - cron: '26 5 * * *'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
-  daily_update:
+  update-repo:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Your Email (kavipriya.manivannan@straive.com)
-        run: |
-          echo "This action runs daily."
+      - name: Simple test step
+        run: echo "Hello World"
 
-      - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          commit_message: "Automated daily commit"
-          file_pattern: "" # Commit all changes.  If you have specific files, list them here.
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'GitHub Actions Bot'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Daily update by kavipriya.manivannan@straive.com
+        run: |
+          # Create or update the daily status file
+          echo "Repository updated on $(date)" > status.txt
+          
+          # Add and commit changes
+          git add status.txt
+          git commit -m "Daily automated update $(date)"
+          git push origin HEAD:main
